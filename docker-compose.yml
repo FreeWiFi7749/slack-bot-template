@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  slack-bot:
+    build: .
+    container_name: slack-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      # 開発時のホットリロード用（本番では削除）
+      - .:/app
+      - /app/node_modules
+      # ログファイル用ボリューム
+      - logs:/app/logs
+    environment:
+      - ENABLE_HOT_RELOAD=${ENABLE_HOT_RELOAD:-false}
+      - DEBUG_MODE=${DEBUG_MODE:-false}
+    networks:
+      - slack-bot-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:3000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis（キャッシュ・セッション管理用）
+  redis:
+    image: redis:7-alpine
+    container_name: slack-bot-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - slack-bot-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL（オプション：データ永続化が必要な場合）
+  postgres:
+    image: postgres:15-alpine
+    container_name: slack-bot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-slackbot}
+      POSTGRES_USER: ${POSTGRES_USER:-slackbot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - slack-bot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-slackbot}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # 本番環境では有効化
+    # ports:
+    #   - "5432:5432"
+
+volumes:
+  logs:
+  redis-data:
+  postgres-data:
+
+networks:
+  slack-bot-network:
+    driver: bridge

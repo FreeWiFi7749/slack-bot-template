@@ -1,0 +1,31 @@
+# Slack SDK
+slack-bolt
+slack-sdk
+
+# SlackCogs Framework (will be available when implemented)
+# slackcogs>=1.0.0
+
+# Environment and Configuration
+python-dotenv
+
+# Async Support
+aiohttp
+asyncio-throttle
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+
+# Development Tools
+black
+flake8
+mypy
+
+# Logging and Monitoring
+structlog
+
+# Optional: Database support
+sqlalchemy
+alembic
+asyncpg
