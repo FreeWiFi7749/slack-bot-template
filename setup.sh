@@ -6,8 +6,7 @@ echo "Starting setup..."
 # make environment variables
 if [ ! -f .env ]; then
     cp .env.example .env
-    echo "Please set your environment variables in .env file"
-    exit 1
+    echo "Created .env file from .env.example. Please set your environment variables in .env file later."
 fi
 
 # make venv

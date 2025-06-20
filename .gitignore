@@ -86,3 +86,6 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# dev
+slackcogs/
